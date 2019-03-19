@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\LiveImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ApiController extends Controller
 {
@@ -16,9 +18,7 @@ class ApiController extends Controller
     {
         try {
             $liveImages = LiveImage::orderBy('id', 'desc')->take(5)->get();
-
-            return response()->json(['success' => true, 'images' => $liveImages]);
-
+            return response()->json(['success' => true, 'status' => 200, 'images' => $liveImages]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
         }
@@ -34,9 +34,14 @@ class ApiController extends Controller
     {
         try {
             if ($request->imageBlob) {
-                $liveImage = LiveImage::create(['imageBlob' => $request->imageBlob]);
+                $image = base64_decode($request->imageBlob);
+                $imageName = Str::random(20);
+                $fileUploaded = Storage::disk('s3')->put('/source/' . $imageName . '.jpg', $image, 'public');
+                if ($fileUploaded) {
+                    $liveImage = LiveImage::create(['imageName' => $imageName]);
+                    return response()->json(['success' => true, 'status' => 200, 'imageName' => $imageName]);
+                }
             }
-            return response()->json(['success' => true, 'image' => $liveImage]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
         }

@@ -22,7 +22,7 @@ class WhitelistMiddleware
             $callerIP = $_SERVER['REMOTE_ADDR'];
         }
 
-        if ($callerIP == env('API_HOST')) {
+        if (in_array($callerIP, [env('API_HOST'), '::1', '127.0.0.1'])) {
             return $next($request);
         }
 
