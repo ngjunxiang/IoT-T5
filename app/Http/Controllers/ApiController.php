@@ -38,9 +38,20 @@ class ApiController extends Controller
                 $imageName = Str::random(20);
                 $fileUploaded = Storage::disk('s3')->put('/source/' . $imageName . '.jpg', $image, 'public');
                 if ($fileUploaded) {
-                    $liveImage = LiveImage::create(['imageName' => $imageName]);
                     return response()->json(['success' => true, 'status' => 200, 'imageName' => $imageName]);
                 }
+            }
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function liveImageUpdateWithCount(Request $request, $imageName)
+    {
+        try {
+            if ($request->imageName && $request->numPeopleDetected) {
+                $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => $request->numPeopleDetected]);
+                return response()->json(['success' => true, 'status' => 200]);
             }
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
