@@ -49,8 +49,12 @@ class ApiController extends Controller
     public function liveImageUpdateWithCount(Request $request, $imageName)
     {
         try {
-            if ($request->imageName && $request->numPeopleDetected) {
-                $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => $request->numPeopleDetected]);
+            if ($request->imageName) {
+                if ($request->numPeopleDetected) {
+                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => $request->numPeopleDetected]);
+                } else {
+                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => 0]);
+                }
                 return response()->json(['success' => true, 'status' => 200]);
             }
         } catch (Exception $e) {
