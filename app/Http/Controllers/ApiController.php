@@ -17,7 +17,7 @@ class ApiController extends Controller
     public function liveImageList()
     {
         try {
-            $liveImages = LiveImage::orderBy('id', 'desc')->take(5)->get();
+            $liveImages = LiveImage::all();
             return response()->json(['success' => true, 'status' => 200, 'images' => $liveImages]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
