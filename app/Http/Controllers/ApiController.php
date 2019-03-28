@@ -17,7 +17,7 @@ class ApiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function liveImageList(Request $request)
+    public function index(Request $request)
     {
         try {
             $request->order = isset($request->order) ? $request->order : 'asc';
@@ -58,6 +58,39 @@ class ApiController extends Controller
             }
 
             return response()->json(['success' => true, 'status' => 200, 'images' => $liveImages]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function average(Request $request)
+    {
+        try {
+            $request->order = isset($request->order) ? $request->order : 'asc';
+            // Check for query parameters
+            $rules = array(
+                'from' => ['required', 'date'],
+                'to' => ['required', 'date', 'after:from'],
+            );
+
+            // Validate query parameters
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'status' => 400, 'message' => $validator->errors()->all()]);
+            }
+
+            // Start sorting based on queries (if any)
+            if ($request->from && $request->to) {
+                $liveImages = round(floatval(LiveImage::orderBy('created_at', $request->order)->limit($request->limit)->whereBetween('created_at', [$request->from, $request->to])->avg('numPeopleDetected')), 2);
+            }
+
+            return response()->json(['success' => true, 'status' => 200, 'average' => $liveImages]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
         }

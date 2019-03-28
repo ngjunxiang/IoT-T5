@@ -14,5 +14,9 @@
 Route::prefix('liveimage')->middleware('whitelist')->group(function () {
     Route::post('/store', 'ApiController@liveImageStore')->name('liveImageStore');
     Route::post('/{imageName}', 'ApiController@liveImageUpdateWithCount')->name('liveImageUpdateWithCount');
-    Route::get('/', 'ApiController@liveImageList')->name('liveImageList');
+
+    Route::get('/', 'ApiController@index')->name('index');
+    Route::get('/average', 'ApiController@average')->name('average');
+    Route::get('/paginate', 'ApiController@paginate')->name('paginate');
+
 });
