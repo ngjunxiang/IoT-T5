@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\LiveImage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ApiController extends Controller
 {
@@ -14,10 +17,46 @@ class ApiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function liveImageList()
+    public function liveImageList(Request $request)
     {
         try {
-            $liveImages = LiveImage::all();
+            $request->order = isset($request->order) ? $request->order : 'asc';
+            // Check for query parameters
+            $rules = array(
+                'limit' => ['integer', 'min:1'],
+                'order' => ['nullable', Rule::in(['asc', 'desc'])],
+                'from' => ['nullable', 'date', 'required_with:to'],
+                'to' => ['nullable', 'date', 'after:from', 'required_with:from'],
+                'aggregate' => ['nullable', Rule::in(['week', 'month'])],
+            );
+
+            // Validate query parameters
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'status' => 400, 'message' => $validator->errors()->all()]);
+            }
+
+            // Start sorting based on queries (if any)
+            if ($request->from && $request->to) {
+                $liveImages = LiveImage::orderBy('created_at', $request->order)->limit($request->limit)->whereBetween('created_at', [$request->from, $request->to])->get();
+            } else {
+                $liveImages = LiveImage::orderBy('created_at', $request->order)->limit($request->limit)->get();
+            }
+
+            // Check if aggregate exists
+            if ($request->aggregate) {
+                if ($request->aggregate == 'week') {
+                    $liveImages = $liveImages->groupBy(function ($liveImage) {
+                        return Carbon::parse($liveImage->created_at)->format('W-Y');
+                    });
+                } else {
+                    $liveImages = $liveImages->groupBy(function ($liveImage) {
+                        return Carbon::parse($liveImage->created_at)->format('M-Y');
+                    });
+                }
+            }
+
             return response()->json(['success' => true, 'status' => 200, 'images' => $liveImages]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
