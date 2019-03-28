@@ -96,6 +96,33 @@ class ApiController extends Controller
         }
     }
 
+    public function paginate(Request $request)
+    {
+        try {
+            $request->order = isset($request->order) ? $request->order : 'asc';
+
+            // Check for query parameters
+            $rules = array(
+                'index' => ['required', 'integer', 'min:0'],
+                'limit' => ['required', 'integer', 'min:1'],
+                'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            );
+
+            // Validate query parameters
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'status' => 400, 'message' => $validator->errors()->all()]);
+            }
+
+            $liveImages = LiveImage::orderBy('created_at', $request->order)->limit($request->limit)->offset($request->index)->get();
+
+            return response()->json(['success' => true, 'status' => 200, 'images' => $liveImages]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      *
