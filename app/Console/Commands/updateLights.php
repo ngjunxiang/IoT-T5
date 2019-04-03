@@ -44,7 +44,7 @@ class updateLights extends Command
         $imagesToUpdate = LiveImage::where('lightsOn', null)->get();
         foreach ($imagesToUpdate as $image) {
             try {
-                $imageSize = Storage::size('/source/' . $image->imageName . '.jpg');
+                $imageSize = Storage::size('/source/' . trim($image->imageName) . '.jpg');
                 if ($imageSize < 400000) {
                     $image->lightsOn = false;
                 } else {
