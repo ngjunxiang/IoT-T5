@@ -6,5 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LiveImage extends Model
 {
-    protected $fillable = ['imageName', 'numPeopleDetected'];
+    protected $casts = [
+        'lightsOn' => 'boolean',
+    ];
+    protected $fillable = ['imageName', 'numPeopleDetected', 'lightsOn'];
+
+
 }

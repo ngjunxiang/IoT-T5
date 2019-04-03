@@ -63,6 +63,16 @@ class ApiController extends Controller
         }
     }
 
+    public function areLightsOn($source)
+    {
+        $imageSize = Storage::size('/source/' . $source . '.jpg');
+        if ($imageSize < 400000) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -150,9 +160,10 @@ class ApiController extends Controller
         try {
             if ($request->imageName) {
                 if ($request->numPeopleDetected) {
-                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => $request->numPeopleDetected]);
+                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => $request->numPeopleDetected, 'lightsOn' => true]);
                 } else {
-                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => 0]);
+                    $liveImage = LiveImage::create(['imageName' => $imageName, 'numPeopleDetected' => 0, 'lightsOn' => $this->areLightsOn($imageName)]);
+
                 }
                 return response()->json(['success' => true, 'status' => 200]);
             }
