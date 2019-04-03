@@ -40,16 +40,22 @@ class updateLights extends Command
     public function handle()
     {
         // Retrieve all images where lightsOn = null
+
         $imagesToUpdate = LiveImage::where('lightsOn', null)->get();
         foreach ($imagesToUpdate as $image) {
-            $imageSize = Storage::size('/source/' . $image->imageName . '.jpg');
-            if ($imageSize < 400000) {
-                $image->lightsOn = false;
-            } else {
-                $image->lightsOn = true;
+            try {
+                $imageSize = Storage::size('/source/' . $image->imageName . '.jpg');
+                if ($imageSize < 400000) {
+                    $image->lightsOn = false;
+                } else {
+                    $image->lightsOn = true;
+                }
+                $image->save();
+            } catch (Exception $e) {
+                print("The image " . $image->imageName . " cannot be found\n");
             }
-            $image->save();
         }
+
         print("A total of " . count($imagesToUpdate) . " images were updated with light status\n");
 
     }
