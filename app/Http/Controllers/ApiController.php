@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\LiveImage;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -166,6 +167,33 @@ class ApiController extends Controller
 
                 }
                 return response()->json(['success' => true, 'status' => 200]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function tenantSeatRequest(Request $request)
+    {
+        try {
+            // Check for query parameters
+            $rules = array(
+                'email' => ['required', 'email'],
+                'requested' => ['required', 'in:true,false'],
+            );
+
+            // Validate query parameters
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'status' => 400, 'message' => $validator->errors()->all()]);
+            }
+
+            if ($request->email && $request->requested) {
+                $user = User::where('email', $request->email)->firstOrFail();
+                $user->requested = $request->requested == 'true' ? true : false;
+                $user->save();
+                return response()->json(['success' => true, 'status' => 200, 'email' => $user->email, 'requested' => $user->requested]);
             }
         } catch (Exception $e) {
             return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);

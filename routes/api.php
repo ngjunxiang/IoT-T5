@@ -18,5 +18,8 @@ Route::prefix('liveimage')->middleware('whitelist')->group(function () {
     Route::get('/', 'ApiController@index')->name('index');
     Route::get('/average', 'ApiController@average')->name('average');
     Route::get('/paginate', 'ApiController@paginate')->name('paginate');
+});
 
+Route::prefix('tenants')->middleware('whitelist')->group(function () {
+    Route::post('/request', 'ApiController@tenantSeatRequest')->name('tenantSeatRequest');
 });
