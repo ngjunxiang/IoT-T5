@@ -79,6 +79,15 @@ class ApiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function count(Request $request)
+    {
+        try {
+            return response()->json(['success' => true, 'status' => 200, 'count' => LiveImage::count()]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'status' => get_class($e), 'message' => $e->getMessage()]);
+        }
+    }
+
     public function average(Request $request)
     {
         try {
